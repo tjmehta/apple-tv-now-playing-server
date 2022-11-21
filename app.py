@@ -238,4 +238,4 @@ def jsonify_playing(playing):
     return reduce(reducer, playing._PROPERTIES, {})
 
 
-app.run(port=5005)
+app.run(host="0.0.0.0", port=5005)
