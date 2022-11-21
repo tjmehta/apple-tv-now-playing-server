@@ -1,9 +1,12 @@
 import asyncio
 from os import path, remove
+from functools import reduce
+import base64
+import re
 
-from pyatv import scan, pair
+from pyatv import scan, pair, connect
 from pyatv.const import Protocol
-from quart import Quart, render_template, request, redirect, url_for
+from quart import Quart, render_template, request, redirect, url_for, jsonify
 
 app = Quart(__name__)
 
@@ -149,13 +152,60 @@ async def delete_pair_route():
 
 ### NOW PLAYING ROUTES
 
-@app.route("/now_playing")
-async def now_playing_route():
+
+@app.route("/playing")
+async def playing_route():
     loop = asyncio.get_event_loop()
 
     # parse query params
     mac = validate_string(request.args.get("mac"))
+    width = validate_int(request.args.get("width"))
+    height = validate_int(request.args.get("height"))
+
+    result = {}
     if mac == None:
+        return {"message": "'mac' query parameter is required"}, 400
+
+    filepath = path.join(".appletv_pairings", mac)
+    if not path.isfile(filepath):
+        return {"message": "device with mac is not paired"}, 409
+
+    with open(filepath, "r") as f:
+        airplay_creds = f.read(300)
+
+    identifier = mac
+    atvs = await scan(loop=loop, identifier=identifier, protocol=Protocol.AirPlay)
+
+    if len(atvs) == 0:
+        return {"message": "device with mac not found"}, 404
+
+    # get config
+    config = atvs[0]
+    config.set_credentials(Protocol.AirPlay, airplay_creds)
+
+    # connect and get playing
+    atv = await connect(loop=loop, config=config)
+    playing = await atv.metadata.playing()
+    json = jsonify_playing(playing)
+    artwork = await atv.metadata.artwork(height=height, width=width)
+    if artwork and len(artwork.bytes):
+        json.update(
+            {
+                "artwork": {
+                    "id": atv.metadata.artwork_id,
+                    "bytes": re.sub(
+                        "^b'([^']+)'$", r"\1", str(base64.b64encode(artwork.bytes))
+                    ),
+                    "mimetype": artwork.mimetype,
+                    "height": artwork.height,
+                    "width": artwork.width,
+                }
+            }
+        )
+    print(json)
+
+    return json, 200, {"Content-Type": "application/json"}
+
 
 ### UTILS
 def write_file(filename, content):
@@ -169,6 +219,23 @@ def validate_string(string):
     if len(string):
         return string
     return None
+
+
+def validate_int(string):
+    if string == None:
+        return None
+    if len(string):
+        return int(string)
+    return None
+
+
+def jsonify_playing(playing):
+    def reducer(memo, prop):
+        val = getattr(playing, prop) or ""
+        memo[prop] = str(val)
+        return memo
+
+    return reduce(reducer, playing._PROPERTIES, {})
 
 
 app.run(port=5001)
