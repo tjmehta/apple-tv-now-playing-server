@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <style>
+      label {
+        display: inline-block;
+        min-width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to Apple TV Now Playing</h1>
+    <h2>Step 1: Scan</h2>
+    <form method="get" action="/scan">
+      <div>
+        <label for="ip">IP Address:</label>
+        <input name="ip" type="text" placeholder="optional"></input>
+      </div>
+      <div>
+        <label for="mac">MAC Address:</label>
+        <input name="mac" type="text" placeholder="optional"></input>
+      </div>
+      <div>
+        <label for="name">Name:</label>
+        <input name="name" type="text" placeholder="optional"></input>
+      </div>
+      <!-- <div>
+        <label for="protocol">Protocol:</label>
+        <select name="protocol">
+          <option value=1>DMAP</option>
+          <option value=2>MRP</option>
+          <option value=3 selected>AirPlay</option>
+          <option value=4>Companion</option>
+          <option value=5>RAOP</option>
+        </select>
+      </div> -->
+      <button>Scan</button>
+    </form>
+  </body>
+</html>

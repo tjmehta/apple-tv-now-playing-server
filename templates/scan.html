@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <style>
+      td {
+        padding-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Step 2: Select Apple TV to Pair</h2>
+    <form action="/pair">
+      <table>
+        <tr>
+          <td>select</td>
+          <td>name</td>
+          <td>mac</td>
+          <td>ip</td>
+        </tr>
+        {% for atv in atvs %}
+          <tr id="{{atv.mac}}">
+            <td><input name="mac" value="{{atv.device_info.mac}}" type="radio" /></td>
+            <td class="name">{{ atv.name }}</td>
+            <td class="mac">{{ atv.device_info.mac }}</td>
+            <td class="ip">{{ atv.address }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+      <button>Start Pairing</button>
+    </form>
+  </body>
+</html>
