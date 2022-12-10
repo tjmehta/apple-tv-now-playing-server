@@ -1,20 +1,29 @@
 import asyncio
-from os import path, remove
-from functools import reduce
+
 import base64
 import re
 
 from pyatv import scan, pair, connect
 from pyatv.const import Protocol
-from quart import Quart, render_template, request, redirect, url_for, jsonify
+from quart import Quart, render_template, request, redirect, url_for
+
+
+import storage.appletv_pairings
+import storage.tidbyt_configs
+from utils.validate_int import validate_int
+from utils.validate_string import validate_string
+from utils.jsonify_playing import jsonify_playing
+from appletv_playing_subscriber import AppletvPlayingSubscriber
+from tidbyt_appletv_listener import TidbytAppletvListener
 
 app = Quart(__name__)
 
 
 ### PAIRING ROUTES
 
-# HACK: memory stack.. to keep pairings around
+# memory storage..
 pairings = {}
+atv_subcribers = {}
 
 
 @app.route("/")
@@ -41,12 +50,14 @@ async def scan_route():
     )
 
     # filter airplay devices using query params
-    filtered_atvs = filter(
-        lambda atv: (name == None and ip == None and identifier == None)
-        or name == atv.name
-        or ip == str(atv.address)
-        or identifier == str(atv.identifier),
-        atvs,
+    filtered_atvs = list(
+        filter(
+            lambda atv: (name == None and ip == None and identifier == None)
+            or name == atv.name
+            or ip == str(atv.address)
+            or identifier == str(atv.identifier),
+            atvs,
+        )
     )
 
     # render
@@ -62,8 +73,8 @@ async def pair_route():
     if mac == None:
         return redirect(url_for("scan_route"))
 
-    filepath = path.join(".appletv_pairings", mac)
-    if path.isfile(filepath):
+    atv_pair_exists = storage.appletv_pairings.has(mac)
+    if atv_pair_exists:
         return await render_template("pair_exists.html", mac=mac)
 
     # check if pairing in progress
@@ -96,8 +107,8 @@ async def pair_pin_route():
     if pin == None:
         return redirect(url_for("pair_route"))
 
-    filepath = path.join(".appletv_pairings", mac)
-    if path.isfile(filepath):
+    atv_pair_exists = storage.appletv_pairings.has(mac)
+    if atv_pair_exists:
         return redirect(url_for("pair_route"))
 
     # check if pairing in progress
@@ -117,7 +128,7 @@ async def pair_pin_route():
     await pairing.finish()
 
     if pairing.has_paired:
-        write_file(mac, pairing.service.credentials)
+        storage.appletv_pairings.save(mac, pairing.service.credentials)
         await pairing.close()
         del pairings[mac]
         return await render_template("pair_exists.html", mac=mac)
@@ -138,9 +149,7 @@ async def delete_pair_route():
     if mac in pairings and pairings[mac] == "waiting":
         return "Waiting on pairing, try again in a few seconds.."
 
-    filepath = path.join(".appletv_pairings", mac)
-    if path.isfile(filepath):
-        remove(filepath)
+    storage.appletv_pairings.remove(mac)
 
     if mac in pairings and pairings[mac]:
         pairing = pairings[mac]
@@ -166,12 +175,14 @@ async def playing_route():
     if mac == None:
         return {"message": "'mac' query parameter is required"}, 400
 
-    filepath = path.join(".appletv_pairings", mac)
-    if not path.isfile(filepath):
+    atv_pair_exists = storage.appletv_pairings.has(mac)
+    if not atv_pair_exists:
         return {"message": "device with mac is not paired"}, 409
 
-    with open(filepath, "r") as f:
-        airplay_creds = f.read(300)
+    airplay_creds = storage.appletv_pairings.get(mac)
+
+    if airplay_creds == "":
+        return {"message": "device with mac is not paired"}, 409
 
     identifier = mac
     atvs = await scan(loop=loop, identifier=identifier, protocol=Protocol.AirPlay)
@@ -202,40 +213,153 @@ async def playing_route():
                 }
             }
         )
-    print(json)
-
+    print("playing:", json["title"])
+    atv.close()
     return json, 200, {"Content-Type": "application/json"}
 
 
-### UTILS
-def write_file(filename, content):
-    with open(path.join(".appletv_pairings", filename), "w") as f:
-        f.write(content)
+### TIDBYT ROUTES
 
 
-def validate_string(string):
-    if string == None:
-        return None
-    if len(string):
-        return string
-    return None
+@app.route("/tidbyt")
+async def tidbyt_route():
+    loop = asyncio.get_event_loop()
+
+    # parse query params
+    macs = storage.appletv_pairings.list_macs()
+
+    # scan airplay devices
+    identifier = validate_string(request.args.get("mac"))
+    atvs = await scan(
+        loop=loop, hosts=None, identifier=identifier, protocol=Protocol.AirPlay
+    )
+
+    # filter airplay devices using query params
+    filtered_atvs = list(
+        filter(
+            lambda atv: str(atv.identifier) in macs,
+            atvs,
+        )
+    )
+
+    # render
+    return await render_template("tidbyt.html", atvs=filtered_atvs)
 
 
-def validate_int(string):
-    if string == None:
-        return None
-    if len(string):
-        return int(string)
-    return None
+@app.route("/tidbyt_save")
+async def tidbyt_save_route():
+    loop = asyncio.get_event_loop()
+
+    # parse query params
+    atv_mac = validate_string(request.args.get("mac"))
+    if atv_mac == None:
+        return redirect(url_for("tidbyt_route"))
+    tidbyt_device_id = validate_string(request.args.get("tidbyt_device_id"))
+    if tidbyt_device_id == None:
+        return redirect(url_for("tidbyt_route"))
+    tidbyt_api_key = validate_string(request.args.get("tidbyt_api_key"))
+    if tidbyt_api_key == None:
+        return redirect(url_for("tidbyt_route"))
+
+    # check if atv pairing exists
+    atv_pair_exists = storage.appletv_pairings.has(atv_mac)
+    if not atv_pair_exists:
+        return redirect(url_for("tidbyt_route"))
+
+    # check if tidbyt already saved
+    tidbyt_config_exists = storage.tidbyt_configs.has(tidbyt_device_id)
+    if tidbyt_config_exists:
+        return await render_template(
+            "tidbyt_config_exists.html", tidbyt_device_id=tidbyt_device_id
+        )
+
+    tidbyt_config = {
+        "device_id": tidbyt_device_id,
+        "api_key": tidbyt_api_key,
+        "appletv_mac": atv_mac,
+    }
+
+    # listen
+    await tidbyt_appletv_subscribe(loop, tidbyt_config)
+
+    # save config
+    storage.tidbyt_configs.save(tidbyt_device_id, tidbyt_config)
+    return await render_template(
+        "tidbyt_config_exists.html", tidbyt_device_id=tidbyt_device_id
+    )
 
 
-def jsonify_playing(playing):
-    def reducer(memo, prop):
-        val = getattr(playing, prop) or ""
-        memo[prop] = str(val)
-        return memo
+async def tidbyt_appletv_subscribe(loop, tidbyt_config):
+    atv_mac = tidbyt_config["appletv_mac"]
+    print("subscribe", atv_mac)
+    identifier = atv_mac
+    atvs = await scan(loop=loop, identifier=identifier, protocol=Protocol.AirPlay)
 
-    return reduce(reducer, playing._PROPERTIES, {})
+    if len(atvs) == 0:
+        raise Exception("apple tv not found: " + identifier)
+
+    airplay_creds = storage.appletv_pairings.get(atv_mac)
+    if airplay_creds == "":
+        raise Exception("apple tv with mac is not paired: " + identifier)
+
+    atv_config = atvs[0]
+
+    if atv_config.identifier in atv_subcribers:
+        print("subscribe: already subscribed", atv_mac)
+
+    async def listen():
+        atv_config.set_credentials(Protocol.AirPlay, airplay_creds)
+        atv = await connect(loop=loop, config=atv_config)
+        listener = TidbytAppletvListener(tidbyt_config)
+        sub = AppletvPlayingSubscriber(atv, listener, listener)
+        sub.start()
+        atv_subcribers[atv_config.identifier] = sub
+
+    app.add_background_task(listen)
 
 
-app.run(host="0.0.0.0", port=5005)
+@app.route("/delete_tidbyt_config")
+async def delete_tidbyt_config_route():
+    # parse query params
+    tidbyt_device_id = validate_string(request.args.get("tidbyt_device_id"))
+    if tidbyt_device_id == None:
+        raise Exception("tidbyt_device_id (query param) is required")
+
+    tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
+
+    if tidbyt_config.appletv_mac in atv_subcribers:
+        atv_subcribers[tidbyt_config.appletv_mac].stop()
+        del atv_subcribers[tidbyt_config.appletv_mac]
+
+    storage.tidbyt_configs.remove(tidbyt_device_id)
+
+    return redirect(url_for("tidbyt"))
+
+
+async def init_subscriptions():
+    print("init subscriptions")
+    loop = asyncio.get_event_loop()
+    tidbyt_device_ids = storage.tidbyt_configs.list_device_ids()
+    for device_id in tidbyt_device_ids:
+        tidbyt_config = storage.tidbyt_configs.get(device_id)
+        print(device_id, len(tidbyt_config))
+        await tidbyt_appletv_subscribe(loop, tidbyt_config)
+
+
+async def unsubscribe_all():
+    for atv_mac in atv_subcribers:
+        atv_subcribers[atv_mac].stop()
+
+
+@app.before_serving
+async def after_listen():
+    await init_subscriptions()
+
+
+@app.after_serving
+async def shutdown():
+    await unsubscribe_all()
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5005)

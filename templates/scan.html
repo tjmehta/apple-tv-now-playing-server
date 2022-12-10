@@ -18,7 +18,7 @@
         </tr>
         {% for atv in atvs %}
           <tr id="{{atv.mac}}">
-            <td><input name="mac" value="{{atv.device_info.mac}}" type="radio" /></td>
+            <td><input required name="mac" value="{{atv.device_info.mac}}" type="radio" /></td>
             <td class="name">{{ atv.name }}</td>
             <td class="mac">{{ atv.device_info.mac }}</td>
             <td class="ip">{{ atv.address }}</td>

@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <style>
+      td {
+        padding-right: 10px;
+      }
+      input[type=text], textarea {
+        width: 400px;
+      }
+      textarea {
+        height: 110px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tidbyt Apple TV Now Playing Setup</h1>
+    <h2>Select Apple TV</h2>
+    <form action="/tidbyt_save">
+      <table>
+        {% if atvs|length == 0 %}
+        <tr>
+          <td>No Paired Apple TVs Found on Network. Did you pair forget to pair your Apple TV first (if not refresh)? <a href="/">Pair now.</a></td>
+        </tr>
+      </table>
+        {% else %}
+        <tr>
+          <td>select</td>
+          <td>name</td>
+          <td>mac</td>
+          <td>ip</td>
+        </tr>
+        {% for atv in atvs %}
+        <tr id="{{atv.mac}}">
+          {% if atvs|length == 1 %}
+          <td><input checked onclick="event.preventDefault()" name="mac" value="{{atv.device_info.mac}}" type="radio" required /></td>
+          {% else %}
+          <td><input name="mac" value="{{atv.device_info.mac}}" type="radio" required /></td>
+          {% endif %}
+          <td class="name">{{ atv.name }}</td>
+          <td class="mac">{{ atv.device_info.mac }}</td>
+          <td class="ip">{{ atv.address }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <h2>Enter Tidbyt Info</h2>
+      <p>Instructions: Tidbyt App > ⛭ Settings > General > Get API key</p>
+      <label for="tidbyt_device_id">Tidbyt Device ID:</label><br/>
+      <input type="text" name="tidbyt_device_id" placeholder="required" required width="400px" /><br/>
+      <label for="tidbyt_api_key">Tidbyt API Key:</label><br/>
+      <textarea name="tidbyt_api_key" placeholder="required" required width="400px"></textarea><br/>
+      <br/>
+      <button>Pair Apple TV w/ Tidbyt</button>
+        {% endif %}
+    </form>
+  </body>
+</html>

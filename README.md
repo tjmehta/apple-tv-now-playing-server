@@ -58,3 +58,7 @@ curl http://localhost:5005/playing?mac=AA:BB:CC:DD:EE:FF&width=100
     "total_time": "391"
 }
 ```
+
+### Display "Now Playing" Information on your [Tidbyt](https://tidbyt.com)
+
+Follow instructions above to pair w/ an Apple TV. After successfully pairing w/ an Apple TV click the "Configure a Tidbyt" button to configure a tidbyt with the paired Apple TV.

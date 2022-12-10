@@ -2,11 +2,16 @@
   <body>
     <h2>Successfully Paired with Apple TV</h2>
     <form action="/delete_pair">
-      <button>Delete Pairing</button><br/>
+      <button>Delete Pairing for {{mac}}</button><br/>
       <input name="mac" type="hidden" value="{{mac}}">
     </form>
     <form action="/scan">
-      <button>Add Another Pairing</button><br/>
+      <button>Pair Another Apple TV</button><br/>
+    </form>
+    <h3>Configure a Tidbyt w/ Apple TV</h3>
+    <form action="/tidbyt">
+      <button>Configure a Tidbyt</button><br/>
+      <input name="mac" type="hidden" value="{{mac}}">
     </form>
   </body>
 </html>
