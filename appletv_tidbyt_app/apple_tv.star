@@ -189,7 +189,7 @@ def render_now_playing_half(json):
                     expanded = True,
                     children = [
                         render.Marquee(
-                            align = "center"
+                            align = "center",
                             height = 13,
                             width = 64,
                             child = render.Text(
@@ -205,7 +205,7 @@ def render_now_playing_half(json):
                     expanded = True,
                     children = [
                         render.Marquee(
-                            align = "center"
+                            align = "center",
                             height = 6,
                             width = 64,
                             child = render.Text(
