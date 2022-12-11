@@ -1,6 +1,6 @@
 # apple-tv-now-playing-server
 
-simple apple-tv now playing http server using pyatv under the hood
+simple apple-tv now playing http server using pyatv under the hood (and also displaying apple tv now playing info on your [Tidbyt](https://tidbyt.com))
 
 ### Getting Started..
 
