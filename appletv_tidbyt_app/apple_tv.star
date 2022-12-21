@@ -51,8 +51,8 @@ def main(config):
         return render_error("api error (" + str(resp.status_code) + "):" + msg)
 
     if json["device_state"] == "DeviceState.Idle":
-        # just render clock
-        return render_clock_when_idle(config)
+        # just render nothing
+        return render_idle(config)
 
     if json["artist"] and "artwork" in json:
         return render_now_playing_full(json)
@@ -79,6 +79,8 @@ def render_now_playing_full(json):
                     expanded = True,
                     children = [
                         render.Marquee(
+                            offset_start = 4,
+                            offset_end = 16,
                             height = 6,
                             width = 64,
                             child = render.Text(
@@ -132,6 +134,8 @@ def render_now_playing_full(json):
                                     expanded = True,
                                     children = [
                                         render.Marquee(
+                                            offset_start = 4,
+                                            offset_end = 16,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -147,6 +151,8 @@ def render_now_playing_full(json):
                                     expanded = True,
                                     children = [
                                         render.Marquee(
+                                            offset_start = 4,
+                                            offset_end = 16,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -205,6 +211,8 @@ def render_now_playing_half(json):
                     expanded = True,
                     children = [
                         render.Marquee(
+                            offset_start = 4,
+                            offset_end = 16,
                             align = "center",
                             height = 6,
                             width = 64,
@@ -219,24 +227,16 @@ def render_now_playing_half(json):
         ),
     )
 
-def render_clock_when_idle(config):
+def render_idle(config):
     timezone = config.get("timezone")
     now = time.now().in_location(timezone)
 
     return render.Root(
         delay = 500,
         child = render.Box(
-            child = render.Animation(
-                children = [
-                    render.Text(
-                        content = now.format("3:04 PM"),
-                        font = "6x13",
-                    ),
-                    render.Text(
-                        content = now.format("3 04 PM"),
-                        font = "6x13",
-                    ),
-                ],
+            child = render.Text(
+                content = "AppleTV: Idle",
+                font = "6x13",
             ),
         ),
     )
