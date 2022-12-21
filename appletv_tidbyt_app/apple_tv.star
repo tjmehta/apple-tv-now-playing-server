@@ -195,6 +195,8 @@ def render_now_playing_half(json):
                     expanded = True,
                     children = [
                         render.Marquee(
+                            offset_start = 4,
+                            offset_end = 16,
                             align = "center",
                             height = 13,
                             width = 64,
@@ -249,9 +251,9 @@ def render_error(msg):
             expanded = True,
             children = [
                 render.Box(
-                    height = 32,
-                    width = 64,
                     child = render.Marquee(
+                        height = 32,
+                        width = 64,
                         height = 13,
                         width = 36,
                         child = render.Text(
