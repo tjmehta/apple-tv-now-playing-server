@@ -238,7 +238,7 @@ def render_idle(config):
         child = render.Box(
             child = render.Text(
                 content = "AppleTV: Idle",
-                font = "6x13",
+                font = "tb-8",
             ),
         ),
     )
