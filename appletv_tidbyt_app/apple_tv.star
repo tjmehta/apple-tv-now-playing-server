@@ -252,8 +252,6 @@ def render_error(msg):
             children = [
                 render.Box(
                     child = render.Marquee(
-                        height = 32,
-                        width = 64,
                         height = 13,
                         width = 36,
                         child = render.Text(
