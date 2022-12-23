@@ -80,7 +80,7 @@ def render_now_playing_full(json):
                     children = [
                         render.Marquee(
                             offset_start = 4,
-                            offset_end = 16,
+                            offset_end = 4,
                             height = 6,
                             width = 64,
                             child = render.Text(
@@ -135,7 +135,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 16,
+                                            offset_end = 4,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -152,7 +152,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 16,
+                                            offset_end = 4,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
