@@ -80,7 +80,7 @@ def render_now_playing_full(json):
                     children = [
                         render.Marquee(
                             offset_start = 4,
-                            offset_end = 4,
+                            offset_end = 0,
                             height = 6,
                             width = 64,
                             child = render.Text(
@@ -135,7 +135,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 4,
+                                            offset_end = 0,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -152,7 +152,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 4,
+                                            offset_end = 0,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -180,8 +180,8 @@ def render_now_playing_half(json):
             show = split[0]
             episode = " | ".join(split[1::])
         else:
-            show = None
-            episode = json["title"]
+            show = json["title"]
+            episode = None
 
     return render.Root(
         render.Column(
@@ -198,11 +198,11 @@ def render_now_playing_half(json):
                             offset_start = 4,
                             offset_end = 16,
                             align = "center",
-                            height = 13,
+                            height = 6,
                             width = 64,
                             child = render.Text(
                                 content = show,
-                                font = "6x13",
+                                font = "tb-8",
                             ),
                         ),
                     ],
@@ -220,7 +220,7 @@ def render_now_playing_half(json):
                             width = 64,
                             child = render.Text(
                                 content = episode,
-                                font = "tb-8",
+                                font = "tom-thumb",
                             ),
                         ),
                     ],
