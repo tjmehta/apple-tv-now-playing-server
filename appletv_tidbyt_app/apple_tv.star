@@ -80,7 +80,7 @@ def render_now_playing_full(json):
                     children = [
                         render.Marquee(
                             offset_start = 4,
-                            offset_end = 0,
+                            # offset_end = 1,
                             height = 6,
                             width = 64,
                             child = render.Text(
@@ -135,7 +135,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 0,
+                                            # offset_end = 1,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -152,7 +152,7 @@ def render_now_playing_full(json):
                                     children = [
                                         render.Marquee(
                                             offset_start = 4,
-                                            offset_end = 0,
+                                            # offset_end = 1,
                                             height = 6,
                                             width = 64 - THUMBNAIL_WIDTH,
                                             child = render.Text(
@@ -196,7 +196,7 @@ def render_now_playing_half(json):
                     children = [
                         render.Marquee(
                             offset_start = 4,
-                            offset_end = 16,
+                            # offset_end = 1,
                             align = "center",
                             height = 6,
                             width = 64,
@@ -214,7 +214,7 @@ def render_now_playing_half(json):
                     children = [
                         render.Marquee(
                             offset_start = 4,
-                            offset_end = 16,
+                            # offset_end = 1,
                             align = "center",
                             height = 6,
                             width = 64,
@@ -230,18 +230,7 @@ def render_now_playing_half(json):
     )
 
 def render_idle(config):
-    timezone = config.get("timezone")
-    now = time.now().in_location(timezone)
-
-    return render.Root(
-        delay = 500,
-        child = render.Box(
-            child = render.Text(
-                content = "Apple TV: Idle",
-                font = "tb-8",
-            ),
-        ),
-    )
+    return []
 
 def render_error(msg):
     return render.Root(
