@@ -12,7 +12,7 @@ class AppletvPlayingSubscriber:
         self.listener = listener  # keep it around, atv uses weak references
         self.atv = atv
         self.atv.push_updater.listener = push_listener
-        self.atv.power.listener = listener
+        self.atv.device_info.listener = listener
 
     def start(self):
         self.atv.push_updater.start()
