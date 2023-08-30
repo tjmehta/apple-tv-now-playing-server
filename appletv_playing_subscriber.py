@@ -19,6 +19,7 @@ class AppletvPlayingSubscriber:
     async def start_ping(self):
         while True:
             await self.ping_atv()
+            print("ping success")
             await asyncio.sleep(self.ping_interval)
 
     async def ping_atv(self):
