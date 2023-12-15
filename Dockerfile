@@ -1,4 +1,4 @@
-FROM node:16.16.0-buster as pixlet-node
+FROM node:18.19.0-bookworm as pixlet-node
 
 # Clone pixlet
 RUN git clone https://github.com/tidbyt/pixlet
@@ -12,7 +12,7 @@ RUN npm run build
 ##############################################################
 ##############################################################
 
-FROM golang:1.19-buster as pixlet-golang
+FROM golang:1.21.5-bookworm as pixlet-golang
 
 # Install libwebp
 RUN apt-get update && apt-get install libwebp-dev -y
@@ -28,7 +28,7 @@ RUN make build
 ##############################################################
 ##############################################################
 
-FROM python:3.10-buster
+FROM python:3.10-bookworm
 
 RUN pip install quart
 RUN pip install pyatv
