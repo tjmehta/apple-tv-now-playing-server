@@ -326,10 +326,10 @@ async def delete_tidbyt_config_route():
         raise Exception("tidbyt_device_id (query param) is required")
 
     tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
-
-    if tidbyt_config.appletv_mac in atv_subcribers:
-        atv_subcribers[tidbyt_config.appletv_mac].stop()
-        del atv_subcribers[tidbyt_config.appletv_mac]
+    atv_mac = tidbyt_config["appletv_mac"]
+    if atv_mac in atv_subcribers:
+        atv_subcribers[atv_mac].stop()
+        del atv_subcribers[atv_mac]
 
     storage.tidbyt_configs.remove(tidbyt_device_id)
 
