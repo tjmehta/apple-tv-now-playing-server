@@ -12,7 +12,7 @@ RUN npm run build
 ##############################################################
 ##############################################################
 
-FROM golang:1.21.5-bookworm as pixlet-golang
+FROM golang:1.22.6-bookworm as pixlet-golang
 
 # Install libwebp
 RUN apt-get update && apt-get install libwebp-dev -y
