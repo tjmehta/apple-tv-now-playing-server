@@ -333,7 +333,7 @@ async def delete_tidbyt_config_route():
 
     storage.tidbyt_configs.remove(tidbyt_device_id)
 
-    return redirect(url_for("tidbyt"))
+    return redirect(url_for("tidbyt_route"))
 
 
 async def init_subscriptions():
