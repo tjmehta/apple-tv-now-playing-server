@@ -1,4 +1,4 @@
-from tzlocal import get_localzone_name
+# from tzlocal import get_localzone_name
 import os
 import asyncio
 
@@ -33,7 +33,7 @@ def render_and_push(tidbyt_config):
                 "pixlet",
                 "render",
                 singlequote(STAR_FILEPATH),
-                "timezone=" + singlequote(get_localzone_name()),
+                # "timezone=" + singlequote(get_localzone_name()),
                 "apple_tv_mac_address=" + singlequote(tidbyt_config["appletv_mac"]),
                 "apple_tv_now_playing_api_host=" + singlequote("http://localhost:5005"),
                 ####

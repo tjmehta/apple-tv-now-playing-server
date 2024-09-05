@@ -34,6 +34,12 @@
         </select>
       </div> -->
       <button>Scan</button>
+      <h2>Existing Pairings</h2>
+      <ul>
+        {% for mac in paired_atv_macs %}
+          <li><a href="/playing?mac={{ mac }}">{{ mac }}</a></li>
+        {% endfor %}
+      </ul>
     </form>
   </body>
 </html>

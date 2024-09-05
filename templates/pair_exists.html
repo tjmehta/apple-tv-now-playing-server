@@ -8,10 +8,18 @@
     <form action="/scan">
       <button>Pair Another Apple TV</button><br/>
     </form>
+    {% if tidbyt_device_id %}
+    <h3>Tidbyt Configured</h3>
+    <form action="/delete_tidbyt_config">
+      <button>Delete Tidbyt Configuration</button><br/>
+      <input name="tidbyt_device_id" type="hidden" value="{{tidbyt_device_id}}">
+    </form>
+    {% else %}
     <h3>Configure a Tidbyt w/ Apple TV</h3>
     <form action="/tidbyt">
       <button>Configure a Tidbyt</button><br/>
       <input name="mac" type="hidden" value="{{mac}}">
     </form>
+    {% endif %}
   </body>
 </html>
