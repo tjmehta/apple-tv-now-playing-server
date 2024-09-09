@@ -5,6 +5,8 @@ import asyncio
 STAR_FILEPATH = os.path.join("appletv_tidbyt_app", "apple_tv.star")
 WEBP_FILEPATH = os.path.join("appletv_tidbyt_app", "apple_tv.webp")
 TIDBYT_APP_ID = "appletv"
+PLAYING_API_HOST = "http://localhost"
+PLAYING_API_PORT = 5005
 
 
 async def run(cmd):
@@ -35,7 +37,7 @@ def render_and_push(tidbyt_config):
                 singlequote(STAR_FILEPATH),
                 # "timezone=" + singlequote(get_localzone_name()),
                 "apple_tv_mac_address=" + singlequote(tidbyt_config["appletv_mac"]),
-                "apple_tv_now_playing_api_host=" + singlequote("http://localhost:5005"),
+                "apple_tv_now_playing_api_host=" + singlequote(PLAYING_API_HOST + ":" + str(PLAYING_API_PORT)),
                 ####
                 "&&",
                 ####

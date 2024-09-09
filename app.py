@@ -15,6 +15,7 @@ from utils.validate_string import validate_string
 from utils.jsonify_playing import jsonify_playing
 from appletv_playing_subscriber import AppletvPlayingSubscriber
 from tidbyt_appletv_listener import TidbytAppletvListener
+from clients.tidbyt import PLAYING_API_PORT
 
 app = Quart(__name__)
 
@@ -387,4 +388,4 @@ async def shutdown():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5005)
+    app.run(host="0.0.0.0", port=PLAYING_API_PORT)

@@ -50,7 +50,7 @@ def main(config):
         msg = json["message"] if "message" in json else "unknown"
         return render_error("api error (" + str(resp.status_code) + "):" + msg)
 
-    if json["device_state"] == "DeviceState.Idle":
+    if json["device_state"] == "DeviceState.Idle" or json["title"] == "":
         # just render nothing
         return render_idle(config)
 
