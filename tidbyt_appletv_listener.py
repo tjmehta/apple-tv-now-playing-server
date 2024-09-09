@@ -26,7 +26,7 @@ class TidbytAppletvListener(interface.PushListener):
         if self.pause_timer:
             self.pause_timer.cancel()
             self.pause_timer = None
-        asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
+        asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config))
         # If device state is paused, set a timeout
         if playstatus.device_state == const.DeviceState.Paused:
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
@@ -54,7 +54,7 @@ class TidbytAppletvListener(interface.PushListener):
             if payload["device_state"] == "DeviceState.Idle": # enum value didn't work
                 print("PlayStatus Check: New:", payload["title"], payload["device_state"])
                 # not paused so render and push to tidbyt
-                asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
+                asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config))
 
 
     def playstatus_error(self, updater, exception):
