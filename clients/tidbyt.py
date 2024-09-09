@@ -27,7 +27,7 @@ def singlequote(str):
     return "'" + str + "'"
 
 
-def render_and_push(tidbyt_config):
+async def render_and_push(tidbyt_config):
     print("render_and_push")
     try:
         cmd = " ".join(
@@ -51,7 +51,7 @@ def render_and_push(tidbyt_config):
                 singlequote(TIDBYT_APP_ID),
             ]
         )
-        asyncio.create_task(run(cmd))
-
+        return await run(cmd)  # Return the coroutine
     except Exception as e:
         print("render_and_push error:", str(e))
+        return None  # Return None in case of an error
