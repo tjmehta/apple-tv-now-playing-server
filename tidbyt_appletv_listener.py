@@ -1,4 +1,4 @@
-from pyatv import interface
+from pyatv import interface, const
 import clients.tidbyt
 import threading
 import requests
@@ -27,7 +27,7 @@ class TidbytAppletvListener(interface.PushListener):
             self.pause_timer = None
         clients.tidbyt.render_and_push(self.tidbyt_config)
         # If device state is paused, set a timeout
-        if playstatus.device_state == "DeviceState.Paused":
+        if playstatus.device_state == const.DeviceState.Paused:
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
             self.pause_timer = threading.Timer(30, self.handle_still_paused, [playstatus])
             self.pause_timer.start()
@@ -44,12 +44,12 @@ class TidbytAppletvListener(interface.PushListener):
             data_device_state = data.get("device_state")
             data_title = data.get("title")
 
-            if data_device_state == "DeviceState.Paused":
+            if data_device_state == const.DeviceState.Paused:
                 print("PlayStatus Check: Unchanged: Schedule Check", data_title, data_device_state)
                 # still paused so schedule another check in 10 seconds
                 self.pause_timer = threading.Timer(30, self.handle_still_paused, [playstatus])
                 self.pause_timer.start()
-            if data_device_state == "DeviceState.Idle":
+            if data_device_state == const.DeviceState.Idle:
                 print("PlayStatus Check: New:", data_title, data_device_state)
                 # not paused so render and push to tidbyt
                 clients.tidbyt.render_and_push(self.tidbyt_config)
