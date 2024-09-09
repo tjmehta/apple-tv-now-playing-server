@@ -5,6 +5,7 @@ import threading
 import requests
 import json
 
+PAUSE_CHECK_INTERVAL = 15
 
 class TidbytAppletvListener(interface.PushListener):
     def __init__(self, tidbyt_config):
@@ -30,7 +31,7 @@ class TidbytAppletvListener(interface.PushListener):
         # If device state is paused, set a timeout
         if playstatus.device_state == const.DeviceState.Paused:
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
-            self.pause_timer = threading.Timer(15, self.handle_still_paused, [playstatus])
+            self.pause_timer = threading.Timer(PAUSE_CHECK_INTERVAL, self.handle_still_paused, [playstatus])
             self.pause_timer.start()
 
     def handle_still_paused(self, playstatus):
@@ -49,13 +50,21 @@ class TidbytAppletvListener(interface.PushListener):
             if payload["device_state"] == "DeviceState.Paused": # enum value didn't work
                 print("PlayStatus Check: Unchanged: Schedule Check", payload["title"], payload["device_state"])
                 # still paused so schedule another check again after timeout
-                self.pause_timer = threading.Timer(15, self.handle_still_paused, [playstatus])
+                self.pause_timer = threading.Timer(PAUSE_CHECK_INTERVAL, self.handle_still_paused, [playstatus])
                 self.pause_timer.start()
             if payload["device_state"] == "DeviceState.Idle": # enum value didn't work
                 print("PlayStatus Check: New:", payload["title"], payload["device_state"])
-                # not paused so render and push to tidbyt
-                asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config))
+                self.schedule_render_and_push()
 
+    def schedule_render_and_push(self):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # If there's no running event loop, create a new one and run the task
+            asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
+        else:
+            # If there's a running event loop, schedule the task
+            loop.call_soon_threadsafe(lambda: asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config)))
 
     def playstatus_error(self, updater, exception):
         print("PlayStatus Error:", str(exception))
