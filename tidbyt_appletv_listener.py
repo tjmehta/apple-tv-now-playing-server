@@ -33,6 +33,7 @@ class TidbytAppletvListener(interface.PushListener):
             self.pause_timer.start()
 
     def handle_still_paused(self, playstatus):
+        print("PlayStatus Check: Check Hash:", self.last_hash, playstatus.hash)
         if self.last_hash == playstatus.hash:
             print("PlayStatus Check: Fetch Status:", f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}")
             # hit the playing api endpoint at PLAYING_API_HOST:PLAYING_API_PORT using tidbyt_config["appletv_mac"] as query param mac=
@@ -43,6 +44,7 @@ class TidbytAppletvListener(interface.PushListener):
 
             data_device_state = data.get("device_state")
             data_title = data.get("title")
+            print("PlayStatus Update: Fetched:", data_title, data_device_state)
 
             if data_device_state == const.DeviceState.Paused:
                 print("PlayStatus Check: Unchanged: Schedule Check", data_title, data_device_state)
