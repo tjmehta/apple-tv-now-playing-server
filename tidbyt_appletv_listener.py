@@ -40,19 +40,18 @@ class TidbytAppletvListener(interface.PushListener):
             # and if the response has device_state = idle then render and push to tidbyt
             url = f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}"
             response = requests.get(url)
-            data = json.loads(response.text)
+            payload = json.loads(response.text)
 
-            data_device_state = data.get("device_state")
-            data_title = data.get("title")
-            print("PlayStatus Update: Fetched:", data_title, data_device_state)
+            print("PlayStatus Update: Fetched:", payload)
+            print("PlayStatus Update: Fetched Status:", payload["device_state"])
 
-            if data_device_state == const.DeviceState.Paused:
-                print("PlayStatus Check: Unchanged: Schedule Check", data_title, data_device_state)
+            if payload["device_state"] == const.DeviceState.Paused:
+                print("PlayStatus Check: Unchanged: Schedule Check", payload["title"], payload["device_state"])
                 # still paused so schedule another check in 10 seconds
                 self.pause_timer = threading.Timer(30, self.handle_still_paused, [playstatus])
                 self.pause_timer.start()
-            if data_device_state == const.DeviceState.Idle:
-                print("PlayStatus Check: New:", data_title, data_device_state)
+            if payload["device_state"] == const.DeviceState.Idle:
+                print("PlayStatus Check: New:", payload["title"], payload["device_state"])
                 # not paused so render and push to tidbyt
                 clients.tidbyt.render_and_push(self.tidbyt_config)
 
