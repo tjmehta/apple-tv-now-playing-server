@@ -27,7 +27,7 @@ class TidbytAppletvListener(interface.PushListener):
             self.pause_timer = None
         clients.tidbyt.render_and_push(self.tidbyt_config)
         # If device state is paused, set a timeout
-        if playstatus.device_state == "Paused":
+        if playstatus.device_state == "DeviceState.Paused":
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
             self.pause_timer = threading.Timer(30, self.handle_still_paused, [playstatus])
             self.pause_timer.start()
