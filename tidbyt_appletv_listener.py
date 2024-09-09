@@ -1,3 +1,4 @@
+import asyncio
 from pyatv import interface, const
 import clients.tidbyt
 import threading
@@ -53,7 +54,7 @@ class TidbytAppletvListener(interface.PushListener):
             if payload["device_state"] == "DeviceState.Idle": # enum value didn't work
                 print("PlayStatus Check: New:", payload["title"], payload["device_state"])
                 # not paused so render and push to tidbyt
-                clients.tidbyt.render_and_push(self.tidbyt_config)
+                asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
 
 
     def playstatus_error(self, updater, exception):
