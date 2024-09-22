@@ -37,15 +37,14 @@ class TidbytAppletvListener(interface.PushListener):
     def handle_still_paused(self, playstatus):
         print("PlayStatus Check: Check Hash:", self.last_hash, playstatus.hash)
         if self.last_hash == playstatus.hash:
-            print("PlayStatus Check: Fetch Status:", f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}")
+            print("PlayStatus Check: Fetch Status:", f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}&width=22&height=22")
             # hit the playing api endpoint at PLAYING_API_HOST:PLAYING_API_PORT using tidbyt_config["appletv_mac"] as query param mac=
             # and if the response has device_state = idle then render and push to tidbyt
-            url = f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}"
+            url = f"{clients.tidbyt.PLAYING_API_HOST}:{clients.tidbyt.PLAYING_API_PORT}/playing?mac={self.tidbyt_config['appletv_mac']}&width=22&height=22"
             response = requests.get(url)
             payload = json.loads(response.text)
 
-            print("PlayStatus Update: Fetched:", payload)
-            print("PlayStatus Update: Fetched Status:", payload["device_state"])
+            print("PlayStatus Update: Fetched:", payload["title"], payload["device_state"])
 
             if payload["device_state"] == "DeviceState.Paused": # enum value didn't work
                 print("PlayStatus Check: Unchanged: Schedule Check", payload["title"], payload["device_state"])
