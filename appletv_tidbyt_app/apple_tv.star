@@ -54,6 +54,9 @@ def main(config):
         # just render nothing
         return render_idle(config)
 
+    if json["device_state"] == "DeviceState.Paused" and config.get("treat_paused_as_idle") == "True":
+        return render_idle(config)
+
     if json["artist"] and "artwork" in json:
         return render_now_playing_full(json)
     else:

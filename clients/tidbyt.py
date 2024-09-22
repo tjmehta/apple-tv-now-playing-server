@@ -38,6 +38,7 @@ async def render_and_push(tidbyt_config):
                 # "timezone=" + singlequote(get_localzone_name()),
                 "apple_tv_mac_address=" + singlequote(tidbyt_config["appletv_mac"]),
                 "apple_tv_now_playing_api_host=" + singlequote(PLAYING_API_HOST + ":" + str(PLAYING_API_PORT)),
+                "treat_paused_as_idle=" + singlequote(tidbyt_config["treat_paused_as_idle"]),
                 ####
                 "&&",
                 ####

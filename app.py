@@ -303,6 +303,7 @@ async def tidbyt_save_route():
         "device_id": tidbyt_device_id,
         "api_key": tidbyt_api_key,
         "appletv_mac": atv_mac,
+        "treat_paused_as_idle": 'False', # used to check if the apple tv is paused a long time
     }
 
     # listen
