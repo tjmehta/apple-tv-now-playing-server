@@ -233,7 +233,9 @@ def render_now_playing_half(json):
     )
 
 def render_idle(config):
-    return []
+    # note: for self-hosted apps you cannot render nothing via []
+    data = {"title": "Apple TV", "artist": "Idle"}
+    return render_now_playing_full(data)
 
 def render_error(msg):
     return render.Root(
