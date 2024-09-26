@@ -47,17 +47,17 @@ def main(config):
     json = resp.json()
 
     if not resp.status_code == 200:
-        msg = json["message"] if "message" in json else "unknown"
+        msg = json.get("message") if "message" in json else "unknown"
         return render_error("api error (" + str(resp.status_code) + "):" + msg)
 
-    if json["device_state"] == "DeviceState.Idle" or json["title"] == "":
+    if json.get("device_state") == "DeviceState.Idle" or json.get("title") == "":
         # just render nothing
         return render_idle(config)
 
-    if json["device_state"] == "DeviceState.Paused" and config.get("treat_paused_as_idle") == "True":
+    if json.get("device_state") == "DeviceState.Paused" and config.get("treat_paused_as_idle") == "True":
         return render_idle(config)
 
-    if json["artist"] and "artwork" in json:
+    if json.get("artist") and "artwork" in json:
         return render_now_playing_full(json)
     else:
         return render_now_playing_half(json)
@@ -66,10 +66,10 @@ def get_api_url(host, path):
     return host + "/" + path
 
 def render_now_playing_full(json):
-    title = json["title"]
-    artist = json["artist"] or ""
-    album = json["album"] or ""
-    thumbnail = base64.decode(json["artwork"]["bytes"]) if json["artwork"] else ""
+    title = json.get("title")
+    artist = json.get("artist", "")
+    album = json.get("album", "")
+    thumbnail = base64.decode(json.get("artwork", {}).get("bytes")) if json.get("artwork") else ""
     return render.Root(
         render.Column(
             main_align = "space_around",
@@ -174,16 +174,16 @@ def render_now_playing_full(json):
     )
 
 def render_now_playing_half(json):
-    if json["artist"]:
-        show = json["artist"]
-        episode = json["title"]
+    if json.get("artist"):
+        show = json.get("artist")
+        episode = json.get("title")
     else:
-        split = json["title"].split(" | ")
+        split = json.get("title").split(" | ")
         if len(split) > 1:
             show = split[0]
             episode = " | ".join(split[1::])
         else:
-            show = json["title"]
+            show = json.get("title")
             episode = None
 
     return render.Root(
