@@ -14,9 +14,9 @@ async def run(cmd):
         cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
 
+    print(f"[{cmd!r} started with pid {proc.pid}]")
     stdout, stderr = await proc.communicate()
-
-    print(f"[{cmd!r} exited with {proc.returncode}]")
+    print(f"[exited with {proc.returncode}]")
     # if stdout:
     #     print(f"[stdout]\n{stdout.decode()}")
     if stderr:
