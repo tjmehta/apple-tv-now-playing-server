@@ -47,7 +47,7 @@ def main(config):
     json = resp.json()
 
     if not resp.status_code == 200:
-        msg = json.get("message") if "message" in json else "unknown"
+        msg = json.get("message", "unknown")
         return render_error("api error (" + str(resp.status_code) + "):" + msg)
 
     if json.get("device_state") == "DeviceState.Idle" or json.get("title") == "":
@@ -69,7 +69,7 @@ def render_now_playing_full(json):
     title = json.get("title")
     artist = json.get("artist", "")
     album = json.get("album", "")
-    thumbnail = base64.decode(json.get("artwork", {}).get("bytes")) if json.get("artwork") else ""
+    thumbnail = base64.decode(json.get("artwork").get("bytes")) if json.get("artwork") else ""
     return render.Root(
         render.Column(
             main_align = "space_around",
@@ -235,7 +235,7 @@ def render_now_playing_half(json):
 def render_idle(config):
     # note: for self-hosted apps you cannot render nothing via []
     data = {"title": "Apple TV", "artist": "Idle"}
-    return render_now_playing_full(data)
+    return render_now_playing_half(data)
 
 def render_error(msg):
     return render.Root(
