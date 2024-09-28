@@ -31,9 +31,7 @@ class TidbytAppletvListener(interface.PushListener):
             self.pause_timer = None
             self.pause_count = 0
 
-        # todo: move this into schedule_render_and_push?
-        self.tidbyt_config["treat_paused_as_idle"] = "True" if self.pause_count >= MAX_PAUSE_COUNT else "False"
-        asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config))
+        self.schedule_render_and_push()
         # If device state is paused, set a timeout
         if playstatus.device_state == const.DeviceState.Paused:
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
