@@ -66,23 +66,32 @@ class TidbytAppletvListener(interface.PushListener):
                 self.schedule_render_and_push()
 
     def schedule_render_and_push(self):
+        self.tidbyt_config["treat_paused_as_idle"] = "True" if self.pause_count >= MAX_PAUSE_COUNT else "False"
+        print(f"schedule_render_and_push: treat_paused_as_idle: {self.tidbyt_config['treat_paused_as_idle']}")
+
+        def run_render_and_push():
+            print("schedule_render_and_push: Starting render_and_push in a new event loop")
+            asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
+            print("schedule_render_and_push: Completed render_and_push")
+
         try:
             loop = asyncio.get_running_loop()
+            if threading.current_thread() == threading.main_thread():
+                print("schedule_render_and_push: In main thread with running event loop. Using run_in_executor.")
+                loop.run_in_executor(None, run_render_and_push)
+            else:
+                print("schedule_render_and_push: In non-main thread with running event loop. Using call_soon_threadsafe.")
+                loop.call_soon_threadsafe(lambda: asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config)))
         except RuntimeError:
-            # If there's no running event loop, create a new one and run the task
-            self.tidbyt_config["treat_paused_as_idle"] = "True" if self.pause_count >= MAX_PAUSE_COUNT else "False"
-            asyncio.run(clients.tidbyt.render_and_push(self.tidbyt_config))
-        else:
-            # If there's a running event loop, schedule the task
-            self.tidbyt_config["treat_paused_as_idle"] = "True" if self.pause_count >= MAX_PAUSE_COUNT else "False"
-            loop.call_soon_threadsafe(lambda: asyncio.create_task(clients.tidbyt.render_and_push(self.tidbyt_config)))
+            print("schedule_render_and_push: No running event loop. Starting a new thread for render_and_push.")
+            threading.Thread(target=run_render_and_push).start()
 
     def playstatus_error(self, updater, exception):
-        print("PlayStatus Error:", str(exception))
+        print("playstatus_error: PlayStatus Error:", str(exception))
 
     def connection_lost(self, exception):
-        print("Lost connection:", str(exception))
+        print("connection_lost: Lost connection:", str(exception))
         raise Exception("apple tv disconnected: " + self.tidbyt_config["appletv_mac"])
 
     def connection_closed(self):
-        print("Connection closed!")
+        print("connection_closed: Connection closed!")
