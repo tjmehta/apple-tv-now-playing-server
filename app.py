@@ -158,7 +158,7 @@ async def pair_exists_route():
     # loop through each id and get each tidbyt config
     for tidbyt_device_id in tidbyt_device_ids:
         tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
-        if tidbyt_config.appletv_mac == mac:
+        if "appletv_mac" in tidbyt_config and tidbyt_config["appletv_mac"] == mac:
             return await render_template("pair_exists.html", mac=mac, tidbyt_device_id=tidbyt_device_id)
 
     return await render_template("pair_exists.html", mac=mac)

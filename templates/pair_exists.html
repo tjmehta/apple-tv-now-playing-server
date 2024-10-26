@@ -1,6 +1,8 @@
 <html>
   <body>
-    <h2>Successfully Paired with Apple TV</h2>
+    <h2>Paired with Apple TV</h2>
+    <p>Now Playing</p>
+    <a href="/playing?mac={{mac}}&width=22&height=22">{{ mac }}</a>
     <form action="/delete_pair">
       <button>Delete Pairing for {{mac}}</button><br/>
       <input name="mac" type="hidden" value="{{mac}}">
