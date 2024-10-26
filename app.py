@@ -369,8 +369,12 @@ async def init_subscriptions():
     tidbyt_device_ids = storage.tidbyt_configs.list_device_ids()
     for device_id in tidbyt_device_ids:
         tidbyt_config = storage.tidbyt_configs.get(device_id)
-        print(device_id, len(tidbyt_config))
-        await tidbyt_appletv_subscribe(loop, tidbyt_config)
+        print(f"Initializing subscription for device: {device_id}", len(tidbyt_config))
+        try:
+            await tidbyt_appletv_subscribe(loop, tidbyt_config)
+            print(f"Successfully subscribed to device: {device_id}")
+        except Exception as e:
+            print(f"Failed to subscribe to device {device_id}. Error: {str(e)}")
 
 
 async def unsubscribe_all():
