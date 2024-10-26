@@ -1,6 +1,12 @@
 <html>
   <body>
     <h2>Successfully Configured Tidbyt w/ Apple TV</h2>
+    <h1>Tidbyt Configuration for Device: {{ tidbyt_device_id }}</h1>
+    <ul>
+        {% for key, value in tidbyt_config.items() %}
+            <li><strong>{{ key }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
     <form action="/delete_tidbyt_config">
       <button>Delete Config for {{tidbyt_device_id}}</button><br/>
       <input name="tidbyt_device_id" type="hidden" value="{{tidbyt_device_id}}">

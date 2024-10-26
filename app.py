@@ -272,32 +272,37 @@ async def tidbyt_route():
     return await render_template("tidbyt.html", atvs=filtered_atvs)
 
 
+@app.route("/tidbyt_exists")
+async def tidbyt_exists_route():
+    tidbyt_device_id = validate_string(request.args.get("tidbyt_device_id"))
+    if tidbyt_device_id is None:
+        return "tidbyt_device_id (query param) is required", 400
+
+    if not storage.tidbyt_configs.has(tidbyt_device_id):
+        return f"No configuration found for device ID: {tidbyt_device_id}", 404
+
+    existing_tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
+    return await render_template(
+        "tidbyt_config_exists.html",
+        tidbyt_device_id=tidbyt_device_id,
+        tidbyt_config=existing_tidbyt_config
+    )
+
 @app.route("/tidbyt_save")
 async def tidbyt_save_route():
     loop = asyncio.get_event_loop()
 
     # parse query params
     atv_mac = validate_string(request.args.get("mac"))
-    if atv_mac == None:
-        return redirect(url_for("tidbyt_route"))
     tidbyt_device_id = validate_string(request.args.get("tidbyt_device_id"))
-    if tidbyt_device_id == None:
-        return redirect(url_for("tidbyt_route"))
     tidbyt_api_key = validate_string(request.args.get("tidbyt_api_key"))
-    if tidbyt_api_key == None:
+
+    if any(param is None for param in [atv_mac, tidbyt_device_id, tidbyt_api_key]):
         return redirect(url_for("tidbyt_route"))
 
     # check if atv pairing exists
-    atv_pair_exists = storage.appletv_pairings.has(atv_mac)
-    if not atv_pair_exists:
+    if not storage.appletv_pairings.has(atv_mac):
         return redirect(url_for("tidbyt_route"))
-
-    # check if tidbyt already saved
-    tidbyt_config_exists = storage.tidbyt_configs.has(tidbyt_device_id)
-    if tidbyt_config_exists:
-        return await render_template(
-            "tidbyt_config_exists.html", tidbyt_device_id=tidbyt_device_id
-        )
 
     tidbyt_config = {
         "device_id": tidbyt_device_id,
@@ -306,14 +311,23 @@ async def tidbyt_save_route():
         "treat_paused_as_idle": 'False', # used to check if the apple tv is paused a long time
     }
 
+    # check if tidbyt already saved
+    if storage.tidbyt_configs.has(tidbyt_device_id):
+        existing_tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
+
+        # Check if all values match
+        if all(tidbyt_config.get(key) == existing_tidbyt_config.get(key) for key in tidbyt_config):
+            return redirect(url_for("tidbyt_exists_route", tidbyt_device_id=tidbyt_device_id))
+
+        # unsubscribe from old config, assumed it's not paired with different tidbyt device
+        await delete_tidbyt_config(tidbyt_device_id)
+
     # listen
     await tidbyt_appletv_subscribe(loop, tidbyt_config)
 
     # save config
     storage.tidbyt_configs.save(tidbyt_device_id, tidbyt_config)
-    return await render_template(
-        "tidbyt_config_exists.html", tidbyt_device_id=tidbyt_device_id
-    )
+    return redirect(url_for("tidbyt_exists_route", tidbyt_device_id=tidbyt_device_id))
 
 
 async def tidbyt_appletv_subscribe(loop, tidbyt_config):
@@ -352,15 +366,28 @@ async def delete_tidbyt_config_route():
     if tidbyt_device_id == None:
         raise Exception("tidbyt_device_id (query param) is required")
 
+    try:
+        atv_mac = await delete_tidbyt_config(tidbyt_device_id)
+        return redirect(url_for("pair_exists_route", mac=atv_mac))
+    except ValueError as e:
+        # Handle the error, perhaps by rendering an error template or redirecting to an error page
+        return str(e), 400  # Bad Request
+
+async def delete_tidbyt_config(tidbyt_device_id):
     tidbyt_config = storage.tidbyt_configs.get(tidbyt_device_id)
-    atv_mac = tidbyt_config["appletv_mac"]
+    if not tidbyt_config:
+        raise ValueError(f"No configuration found for device ID: {tidbyt_device_id}")
+
+    atv_mac = tidbyt_config.get("appletv_mac")
+    if not atv_mac:
+        raise ValueError(f"No Apple TV MAC address found for device ID: {tidbyt_device_id}")
+
     if atv_mac in atv_subcribers:
         atv_subcribers[atv_mac].stop()
         del atv_subcribers[atv_mac]
 
     storage.tidbyt_configs.remove(tidbyt_device_id)
-
-    return redirect(url_for("playing_route", mac=tidbyt_config.appletv_mac))
+    return atv_mac
 
 
 async def init_subscriptions():
