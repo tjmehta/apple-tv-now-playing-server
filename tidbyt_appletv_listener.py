@@ -33,7 +33,7 @@ class TidbytAppletvListener(interface.PushListener):
 
         self.schedule_render_and_push()
         # If device state is paused, set a timeout
-        if playstatus.device_state == const.DeviceState.Paused:
+        if playstatus.device_state in [const.DeviceState.Paused, const.DeviceState.Stopped]:
             print("PlayStatus Update: Paused: Schedule Check", playstatus.title, playstatus.device_state)
             self.pause_timer = threading.Timer(PAUSE_CHECK_INTERVAL, self.check_still_paused, [playstatus])
             self.pause_timer.start()
@@ -51,7 +51,7 @@ class TidbytAppletvListener(interface.PushListener):
 
             print("PlayStatus CheckStillPaused: Fetch Result:", payload["title"], payload["device_state"])
 
-            if payload["device_state"] == "DeviceState.Paused": # enum value didn't work
+            if payload["device_state"] in ["DeviceState.Paused", "DeviceState.Stopped"]:
                 if self.pause_count < MAX_PAUSE_COUNT:
                     print("PlayStatus CheckStillPaused: Still Paused, Schedule Check Again:", payload["title"], payload["device_state"], self.pause_count)
                     # still paused so schedule another check again after timeout

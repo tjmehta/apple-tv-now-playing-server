@@ -239,7 +239,7 @@ async def playing_route():
                 }
             }
         )
-    print("playing:", json["title"])
+    print("/playing:", json["title"], json["device_state"])
     atv.close()
     return json, 200, {"Content-Type": "application/json"}
 
