@@ -42,7 +42,7 @@ jobs:
           push: true
           tags: tjmehta/apple_tv_now_playing:${{ steps.get_version.outputs.VERSION }}
           cache-from: type=gha,src=/tmp/.buildx-cache
-          cache-to: type=gha,dest=/tmp/.buildx-cache-new,max
+          cache-to: type=gha,dest=/tmp/.buildx-cache-new
 
       - name: Move cache
         run: |
