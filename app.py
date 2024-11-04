@@ -355,6 +355,11 @@ async def tidbyt_appletv_subscribe(loop, tidbyt_config):
         sub = AppletvPlayingSubscriber(atv, listener, listener)
         sub.start()
         atv_subcribers[atv_config.identifier] = sub
+        try:
+            # go ahead and update the tidbyt device
+            listener.schedule_render_and_push()
+        except Exception as e:
+            print("listen error:", str(e))
 
     app.add_background_task(listen)
 
