@@ -20,7 +20,7 @@ class AppletvPlayingSubscriber:
 
     async def start_ping(self):
         while True:
-            await self.ping_atv()
+            await self.ping_with_retry()
             print("ping success")
             await asyncio.sleep(self.ping_interval)
 
@@ -46,6 +46,7 @@ class AppletvPlayingSubscriber:
         elif task.exception() is not None:
             # Let the exception propagate and crash the process
             # Docker will handle the restart
+            logging.info("Ping task exception")
             raise task.exception()
 
     def start(self):
