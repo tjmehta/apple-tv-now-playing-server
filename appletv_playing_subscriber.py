@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from pyatv import interface
 from pyatv.exceptions import BlockedStateError
 
@@ -35,7 +36,8 @@ class AppletvPlayingSubscriber:
                 if attempt < max_retries - 1:
                     await asyncio.sleep(delay)
                 else:
-                    raise e
+                    print(f"Fatal error in ping task: {e}", file=sys.stderr)
+                    sys.exit(1)  # Force process to exit
 
     async def ping_atv(self):
         await self.atv.metadata.playing()
