@@ -46,5 +46,18 @@ jobs:
 
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          if [ -d "/tmp/.buildx-cache" ]; then
+            echo "Removing old cache directory"
+            rm -rf /tmp/.buildx-cache
+          else
+            echo "No old cache directory found"
+          fi
+
+          if [ -d "/tmp/.buildx-cache-new" ]; then
+            echo "Moving new cache directory"
+            mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          else
+            echo "No new cache directory found"
+          fi
+
+          echo "Cache operation completed"
