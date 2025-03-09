@@ -46,10 +46,12 @@ class AppletvPlayingSubscriber:
         if task.cancelled():
             logging.info("Ping task was cancelled")
         elif task.exception() is not None:
-            # Let the exception propagate and crash the process
-            # Docker will handle the restart
-            logging.info("Ping task exception")
-            raise task.exception()
+            exception = task.exception()
+            # Log the error
+            logging.error(f"Fatal error in ping task: {str(exception)}")
+            # Force exit with error code to ensure Docker restarts
+            print(f"Fatal error in ping task: {str(exception)}", file=sys.stderr)
+            sys.exit(1)
 
     def start(self):
         self.atv.push_updater.start()
