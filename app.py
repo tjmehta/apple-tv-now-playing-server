@@ -1,7 +1,8 @@
 import asyncio
-
 import base64
 import re
+import sys
+import signal
 
 from pyatv import scan, pair, connect
 from pyatv.const import Protocol
@@ -16,6 +17,14 @@ from utils.jsonify_playing import jsonify_playing
 from appletv_playing_subscriber import AppletvPlayingSubscriber
 from tidbyt_appletv_listener import TidbytAppletvListener
 from clients.tidbyt import PLAYING_API_PORT
+
+# Make sure unhandled exceptions in tasks crash the service
+def handle_exception(loop, context):
+    exception = context.get('exception')
+    if exception:
+        print(f"Unhandled exception: {exception}", file=sys.stderr)
+        print("Crashing service to trigger restart", file=sys.stderr)
+        sys.exit(1)  # Exit with error code to ensure Docker restarts the service
 
 app = Quart(__name__)
 
@@ -416,6 +425,9 @@ async def unsubscribe_all():
 
 @app.before_serving
 async def after_listen():
+    # Set the exception handler for the event loop
+    loop = asyncio.get_running_loop()
+    loop.set_exception_handler(handle_exception)
     await init_subscriptions()
 
 

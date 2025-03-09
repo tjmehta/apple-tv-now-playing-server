@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from pyatv import interface, const
 import clients.tidbyt
 import threading
@@ -88,10 +89,18 @@ class TidbytAppletvListener(interface.PushListener):
 
     def playstatus_error(self, updater, exception):
         print("playstatus_error: PlayStatus Error:", str(exception))
+        # Force crash on playstatus error
+        print("Fatal error: PlayStatus error with Apple TV - forcing crash", file=sys.stderr)
+        sys.exit(1)
 
     def connection_lost(self, exception):
         print("connection_lost: Lost connection:", str(exception))
-        raise Exception("apple tv disconnected: " + self.tidbyt_config["appletv_mac"])
+        # Force crash on connection lost
+        print("Fatal error: Lost connection to Apple TV - forcing crash", file=sys.stderr) 
+        sys.exit(1)
 
     def connection_closed(self):
         print("connection_closed: Connection closed!")
+        # Force crash on connection closed
+        print("Fatal error: Connection to Apple TV closed - forcing crash", file=sys.stderr)
+        sys.exit(1)
